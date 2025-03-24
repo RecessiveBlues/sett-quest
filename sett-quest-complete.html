@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SETT Quest: Interactive Learning Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f8fa;
+        }
+        .box {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c5282;
+            text-align: center;
+        }
+        h2 {
+            color: #2b6cb0;
+            margin-top: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .score-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .item {
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .student {
+            background-color: #ebf8ff;
+            border-left: 4px solid #3182ce;
+        }
+        .environment {
+            background-color: #e6fffa;
+            border-left: 4px solid #38b2ac;
+        }
+        .tasks {
+            background-color: #fffaf0;
+            border-left: 4px solid #dd6b20;
+        }
+        .tools {
+            background-color: #faf5ff;
+            border-left: 4px solid #805ad5;
+        }
+        button {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+        button:hover {
+            background-color: #2c5282;
+        }
+        button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .option {
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .option:hover {
+            background-color: #f7fafc;
+        }
+        .selected-student {
+            border-color: #3182ce;
+            background-color: #ebf8ff;
+        }
+        .selected-environment {
+            border-color: #38b2ac;
+            background-color: #e6fffa;
+        }
+        .selected-tasks {
+            border-color: #dd6b20;
+            background-color: #fffaf0;
+        }
+        .selected-tools {
+            border-color: #805ad5;
+            background-color: #faf5ff;
+        }
+        .screen {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .feedback {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .excellent {
+            color: #22543d;
+        }
+        .good {
+            color: #744210;
+        }
+        .needs-improvement {
+            color: #742a2a;
+        }
+        .key-principles {
+            background-color: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .certificate {
+            border: 2px solid #3182ce;
+            padding: 20px;
+            margin: 30px auto;
+            max-width: 500px;
+            text-align: center;
+            background-color: #f0f8ff;
+        }
+        .takeaways {
+            background-color: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .takeaways li {
+            margin-bottom: 10px;
+        }
+        @media (max-width: 768px) {
+            .grid, .score-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Intro Screen -->
+    <div id="intro-screen" class="box active">
+        <h1>SETT Quest: A Decision-Making Adventure</h1>
+        <p style="text-align: center;">Apply the SETT model to help students with different needs. Make thoughtful decisions about Students, Environments, Tasks, and Tools.</p>
+        
+        <div class="grid">
+            <div class="item student">
+                <h3>Student</h3>
+                <p>Consider the student's abilities, needs, and preferences</p>
+            </div>
+            <div class="item environment">
+                <h3>Environment</h3>
+                <p>Analyze the settings where the student needs to function</p>
+            </div>
+            <div class="item tasks">
+                <h3>Tasks</h3>
+                <p>Identify specific activities the student needs to accomplish</p>
+            </div>
+            <div class="item tools">
+                <h3>Tools</h3>
+                <p>Select appropriate assistive technologies or strategies</p>
+            </div>
+        </div>
+        
+        <button onclick="showScreen('maya-scenario')">Start Adventure</button>
+    </div>
+    
+    <!-- Maya Scenario -->
+    <div id="maya-scenario" class="box screen">
+        <h1>Case Study: Maya</h1>
+        <p>Maya is a 3rd grade student with dyslexia who struggles with reading tasks. She's enthusiastic about science but gets frustrated during independent reading activities.</p>
+        
+        <div class="grid">
+            <div class="item student">
+                <h3>Student Information</h3>
+                <p>Maya has dyslexia, reads at a 1st grade level, loves science, gets frustrated easily, and has strong verbal skills.</p>
+            </div>
+            <div class="item environment">
+                <h3>Environment Information</h3>
+                <p>General education classroom with 24 students. Reading center has print books. Computer lab available twice weekly.</p>
+            </div>
+            <div class="item tasks">
+                <h3>Tasks Information</h3>
+                <p>Independent reading of science texts, writing lab reports, participating in group discussions.</p>
+            </div>
+            <div class="item" style="background-color: #f7fafc;">
+                <h3>Your Challenge</h3>
+                <p>Apply the SETT model to recommend appropriate assistive technology solutions.</p>
+            </div>
+        </div>
+        
+        <h2>Student Analysis</h2>
+        <p>How will you consider this student's needs?</p>
+        <div class="option student-option" data-category="student" data-value="0" data-text="Focus only on Maya's reading deficits">Focus only on Maya's reading deficits</div>
+        <div class="option student-option" data-category="student" data-value="1" data-text="Consider both her dyslexia and her interest in science">Consider both her dyslexia and her interest in science</div>
+        <div class="option student-option" data-category="student" data-value="2" data-text="Evaluate her verbal strengths as well as reading challenges">Evaluate her verbal strengths as well as reading challenges</div>
+        
+        <h2>Environment Analysis</h2>
+        <p>How will you approach the environmental considerations?</p>
+        <div class="option environment-option" data-category="environment" data-value="0" data-text="Suggest she always work in the computer lab">Suggest she always work in the computer lab</div>
+        <div class="option environment-option" data-category="environment" data-value="1" data-text="Recommend a separate reading space in the classroom">Recommend a separate reading space in the classroom</div>
+        <div class="option environment-option" data-category="environment" data-value="2" data-text="Analyze both classroom and computer lab environments">Analyze both classroom and computer lab environments</div>
+        
+        <h2>Tasks Analysis</h2>
+        <p>How will you analyze the tasks this student needs to complete?</p>
+        <div class="option tasks-option" data-category="tasks" data-value="0" data-text="Simplify all reading tasks to 1st grade level">Simplify all reading tasks to 1st grade level</div>
+        <div class="option tasks-option" data-category="tasks" data-value="2" data-text="Examine the specific reading demands of science materials">Examine the specific reading demands of science materials</div>
+        <div class="option tasks-option" data-category="tasks" data-value="1" data-text="Focus only on group discussion tasks">Focus only on group discussion tasks</div>
+        
+        <h2>Tools Recommendation</h2>
+        <p>What assistive technology tools would you recommend?</p>
+        <div class="option tools-option" data-category="tools" data-value="1" data-text="Basic text-to-speech software">Basic text-to-speech software</div>
+        <div class="option tools-option" data-category="tools" data-value="2" data-text="Text-to-speech with adjustable reading speed and highlighted text">Text-to-speech with adjustable reading speed and highlighted text</div>
+        <div class="option tools-option" data-category="tools" data-value="0" data-text="Simplified science texts only">Simplified science texts only</div>
+        
+        <button id="maya-submit" disabled onclick="submitMaya()">Submit Your Analysis</button>
+    </div>
+    
+    <!-- Maya Feedback -->
+    <div id="maya-feedback" class="box screen">
+        <h1>Your SETT Analysis Results</h1>
+        
+        <h2>Overall Feedback</h2>
+        <p id="maya-overall-feedback"></p>
+        
+        <div class="score-grid">
+            <div class="item student">
+                <h3>Student Analysis</h3>
+                <p class="score"><span id="maya-student-score">0</span>/2</p>
+            </div>
+            <div class="item environment">
+                <h3>Environment Analysis</h3>
+                <p class="score"><span id="maya-environment-score">0</span>/2</p>
+            </div>
+            <div class="item tasks">
+                <h3>Tasks Analysis</h3>
+                <p class="score"><span id="maya-tasks-score">0</span>/2</p>
+            </div>
+            <div class="item tools">
+                <h3>Tools Recommendation</h3>
+                <p class="score"><span id="maya-tools-score">0</span>/2</p>
+            </div>
+        </div>
+        
+        <h2>Detailed Rationales</h2>
+        
+        <div class="feedback student">
+            <h3>Student Choice: <span id="maya-student-choice"></span></h3>
+            <p id="maya-student-rationale"></p>
+            <p id="maya-student-evaluation"></p>
+        </div>
+        
+        <div class="feedback environment">
+            <h3>Environment Choice: <span id="maya-environment-choice"></span></h3>
+            <p id="maya-environment-rationale"></p>
+            <p id="maya-environment-evaluation"></p>
+        </div>
+        
+        <div class="feedback tasks">
+            <h3>Tasks Choice: <span id="maya-tasks-choice"></span></h3>
+            <p id="maya-tasks-rationale"></p>
+            <p id="maya-tasks-evaluation"></p>
+        </div>
+        
+        <div class="feedback tools">
+            <h3>Tools Choice: <span id="maya-tools-choice"></span></h3>
+            <p id="maya-tools-rationale"></p>
+            <p id="maya-tools-evaluation"></p>
+        </div>
+        
+        <div class="key-principles">
+            <h3>Key SETT Model Principles</h3>
+            <p>Remember that effective assistive technology solutions require a comprehensive analysis of all four SETT components and how they interconnect. The most successful recommendations consider the student's strengths and challenges, the demands of their environment, the specific tasks they need to complete, and the tools that best bridge the gaps.</p>
+        </div>
+        
+        <button onclick="showScreen('james-scenario')">Next Scenario</button>
+    </div>
+    
+    <!-- James Scenario -->
+    <div id="james-scenario" class="box screen">
+        <h1>Case Study: James</h1>
+        <p>James is a 7th grader with fine motor difficulties due to cerebral palsy. He struggles to complete written assignments on time, though his ideas are thoughtful and well-developed.</p>
+        
+        <div class="grid">
+            <div class="item student">
+                <h3>Student Information</h3>
+                <p>James has cerebral palsy affecting fine motor control, average reading level, strong critical thinking skills, and experiences fatigue with extended writing.</p>
+            </div>
+            <div class="item environment">
+                <h3>Environment Information</h3>
+                <p>Middle school with 6 different classrooms daily. Most assignments require handwritten work. 1:1 laptop program in the school.</p>
+            </div>
+            <div class="item tasks">
+                <h3>Tasks Information</h3>
+                <p>Taking notes in class, completing written essays, math problem worksheets, science lab reports.</p>
+            </div>
+            <div class="item" style="background-color: #f7fafc;">
+                <h3>Your Challenge</h3>
+                <p>Apply the SETT model to recommend appropriate assistive technology solutions.</p>
+            </div>
+        </div>
+        
+        <h2>Student Analysis</h2>
+        <p>How will you consider this student's needs?</p>
+        <div class="option student-option" data-category="student" data-value="0" data-text="Focus only on his motor limitations">Focus only on his motor limitations</div>
+        <div class="option student-option" data-category="student" data-value="2" data-text="Consider his cognitive strengths alongside motor challenges">Consider his cognitive strengths alongside motor challenges</div>
+        <div class="option student-option" data-category="student" data-value="1" data-text="Evaluate his fatigue levels but not his abilities">Evaluate his fatigue levels but not his abilities</div>
+        
+        <h2>Environment Analysis</h2>
+        <p>How will you approach the environmental considerations?</p>
+        <div class="option environment-option" data-category="environment" data-value="2" data-text="Analyze access needs across all classroom environments">Analyze access needs across all classroom environments</div>
+        <div class="option environment-option" data-category="environment" data-value="1" data-text="Only consider modifications to his desk setup">Only consider modifications to his desk setup</div>
+        <div class="option environment-option" data-category="environment" data-value="0" data-text="Suggest he always work in a resource room">Suggest he always work in a resource room</div>
+        
+        <h2>Tasks Analysis</h2>
+        <p>How will you analyze the tasks this student needs to complete?</p>
+        <div class="option tasks-option" data-category="tasks" data-value="0" data-text="Reduce all writing assignments by 50%">Reduce all writing assignments by 50%</div>
+        <div class="option tasks-option" data-category="tasks" data-value="2" data-text="Examine the specific motor demands of different assignments">Examine the specific motor demands of different assignments</div>
+        <div class="option tasks-option" data-category="tasks" data-value="1" data-text="Focus only on note-taking accommodations">Focus only on note-taking accommodations</div>
+        
+        <h2>Tools Recommendation</h2>
+        <p>What assistive technology tools would you recommend?</p>
+        <div class="option tools-option" data-category="tools" data-value="0" data-text="Basic keyboard with standard mouse">Basic keyboard with standard mouse</div>
+        <div class="option tools-option" data-category="tools" data-value="2" data-text="Speech-to-text software with specialized keyboard">Speech-to-text software with specialized keyboard</div>
+        <div class="option tools-option" data-category="tools" data-value="1" data-text="Note-taking app only">Note-taking app only</div>
+        
+        <button id="james-submit" disabled onclick="submitJames()">Submit Your Analysis</button>
+    </div>
+    
+    <!-- James Feedback -->
+    <div id="james-feedback" class="box screen">
+        <h1>Your SETT Analysis Results</h1>
+        
+        <h2>Overall Feedback</h2>
+        <p id="james-overall-feedback"></p>
+        
+        <div class="score-grid">
+            <div class="item student">
+                <h3>Student Analysis</h3>
+                <p class="score"><span id="james-student-score">0</span>/2</p>
+            </div>
+            <div class="item environment">
+                <h3>Environment Analysis</h3>
+                <p class="score"><span id="james-environment-score">0</span>/2</p>
+            </div>
+            <div class="item tasks">
+                <h3>Tasks Analysis</h3>
+                <p class="score"><span id="james-tasks-score">0</span>/2</p>
+            </div>
+            <div class="item tools">
+                <h3>Tools Recommendation</h3>
+                <p class="score"><span id="james-tools-score">0</span>/2</p>
+            </div>
+        </div>
+        
+        <h2>Detailed Rationales</h2>
+        
+        <div class="feedback student">
+            <h3>Student Choice: <span id="james-student-choice"></span></h3>
+            <p id="james-student-rationale"></p>
+            <p id="james-student-evaluation"></p>
+        </div>
+        
+        <div class="feedback environment">
+            <h3>Environment Choice: <span id="james-environment-choice"></span></h3>
+            <p id="james-environment-rationale"></p>
+            <p id="james-environment-evaluation"></p>
+        </div>
+        
+        <div class="feedback tasks">
+            <h3>Tasks Choice: <span id="james-tasks-choice"></span></h3>
+            <p id="james-tasks-rationale"></p>
+            <p id="james-tasks-evaluation"></p>
+        </div>
+        
+        <div class="feedback tools">
+            <h3>Tools Choice: <span id="james-tools-choice"></span></h3>
+            <p id="james-tools-rationale"></p>
+            <p id="james-tools-evaluation"></p>
+        </div>
+        
+        <div class="key-principles">
+            <h3>Key SETT Model Principles</h3>
+            <p>Remember that effective assistive technology solutions require a comprehensive analysis of all four SETT components and how they interconnect. The most successful recommendations consider the student's strengths and challenges, the demands of their environment, the specific tasks they need to complete, and the tools that best bridge the gaps.</p>
+        </div>
+        
+        <button onclick="showScreen('completion-screen')">Complete Game</button>
+    </div>
+    
+    <!-- Completion Screen -->
+    <div id="completion-screen" class="box screen">
+        <h1>Congratulations!</h1>
+        <p style="text-align: center; font-size: 18px;">You've completed the SETT Quest adventure!</p>
+        
+        <div class="certificate">
+            <h2>Certificate of Completion</h2>
+            <p>This certifies that</p>
+            <p style="font-size: 20px; font-weight: bold;">Resource Teacher</p>
+            <p>has successfully completed the SETT Quest training</p>
+            <p>demonstrating knowledge of applying the SETT framework</p>
+            <p>to make effective assistive technology decisions</p>
+        </div>
+        
+        <div class="takeaways">
+            <h2>Key SETT Model Takeaways</h2>
+            <ul>
+                <li><strong>Student:</strong> Consider the whole student - strengths, challenges, interests, and preferences. Go beyond focusing on just the disability.</li>
+                <li><strong>Environment:</strong> Analyze all settings where the student needs to function, not just a single location. Technology should work across all relevant environments.</li>
+                <li><strong>Tasks:</strong> Break down specific task demands to understand exactly where barriers exist. Different tasks may require different accommodations.</li>
+                <li><strong>Tools:</strong> Select technologies that address the specific needs identified in your analysis. The right tool bridges the gap between student abilities and task demands.</li>
+                <li><strong>Integration:</strong> The most effective solutions consider how all four components interconnect. No single component should be evaluated in isolation.</li>
+            </ul>
+        </div>
+        
+        <p>By applying the SETT model systematically, you can make more effective assistive technology recommendations that truly meet students' needs in all contexts.</p>
+        
+        <button onclick="resetGame()">Play Again</button>
+    </div>
+
+    <script>
+        // Game data
+        const gameData = {
+            maya: {
+                student: { score: 0, choice: "", selected: false },
+                environment: { score: 0, choice: "", selected: false },
+                tasks: { score: 0, choice: "", selected: false },
+                tools: { score: 0, choice: "", selected: false },
+                rationales: {
+                    student: [
+                        "This approach is too narrow. The SETT model encourages us to consider the whole student, not just their challenges. By focusing only on Maya's reading deficits, we miss important information about her interests and strengths that could inform effective solutions.",
+                        "This is a good start. Recognizing both Maya's challenges (dyslexia) and interests (science) provides important context for selecting appropriate tools. However, a complete student analysis would also incorporate her verbal strengths.",
+                        "Excellent choice! A comprehensive student analysis considers challenges, interests, AND strengths. Recognizing Maya's verbal strengths provides a potential avenue for accommodation (e.g., audio-based learning) while her reading skills develop."
+                    ],
+                    environment: [
+                        "This is too restrictive. The SETT model requires analyzing all environments where the student needs to function. Maya needs support in her regular classroom, not just during computer lab time, which is only available twice weekly.",
+                        "This shows some environmental consideration but is still limited. While a separate reading space might help with focus, it doesn't address how Maya will access curriculum materials across all classroom activities.",
+                        "Excellent choice! The SETT model requires considering all relevant environments. By analyzing both the regular classroom and computer lab, you can develop a comprehensive solution that works across Maya's entire school experience."
+                    ],
+                    tasks: [
+                        "This oversimplifies the approach to tasks. While Maya reads at a 1st grade level, simply lowering all content to this level would prevent her from accessing grade-appropriate science concepts that she's interested in and capable of understanding.",
+                        "This is a partial approach. While leveraging Maya's verbal strengths in discussions is good, it doesn't address how she'll access written content necessary for full participation in science learning.",
+                        "Excellent choice! The SETT model recommends analyzing the specific demands of tasks. By examining what makes science materials challenging (vocabulary, text density, etc.), you can target accommodations that preserve access to grade-level content."
+                    ],
+                    tools: [
+                        "This tool is too limited. Simplified texts alone don't build Maya's independence as a learner. The SETT model encourages selecting tools that bridge the gap between student abilities and task demands while supporting growth.",
+                        "This tool partially addresses Maya's needs. Basic text-to-speech helps with decoding, but doesn't provide features that would help Maya track and comprehend the science content she's interested in.",
+                        "Excellent choice! This tool not only addresses Maya's decoding challenges but also includes features (highlighting, speed control) that support comprehension and independent learning — important for science material with complex vocabulary."
+                    ]
+                }
+            },
+            james: {
+                student: { score: 0, choice: "", selected: false },
+                environment: { score: 0, choice: "", selected: false },
+                tasks: { score: 0, choice: "", selected: false },
+                tools: { score: 0, choice: "", selected: false },
+                rationales: {
+                    student: [
+                        "This approach is too limited. The SETT model emphasizes considering the whole student. By focusing only on James' motor limitations, we miss the opportunity to leverage his cognitive strengths in our solution design.",
+                        "This is partially correct. Fatigue is an important consideration for James, but the SETT model encourages us to consider all aspects of the student. This approach misses his cognitive strengths, which are crucial for designing appropriate accommodations.",
+                        "Excellent choice! A comprehensive student analysis recognizes both challenges and strengths. By considering James' strong critical thinking alongside his motor challenges, we can design solutions that address barriers while allowing his ideas to shine."
+                    ],
+                    environment: [
+                        "This is too restrictive and isolating. The SETT model emphasizes inclusion in the least restrictive environment. James should be supported in his regular classrooms rather than being segregated in a resource room, especially given his cognitive abilities.",
+                        "This shows limited environmental consideration. While desk setup is important, it's only one aspect of James' environmental needs. The SETT model requires considering all relevant environments where the student functions.",
+                        "Excellent choice! The SETT model requires analyzing all environments where accommodations are needed. Since James moves between 6 classrooms daily, a comprehensive analysis of access needs across all these environments is essential for an effective solution."
+                    ],
+                    tasks: [
+                        "This overly simplifies the task approach. Simply reducing quantity doesn't address the specific barriers James faces. The SETT model encourages maintaining academic expectations while addressing barriers to participation.",
+                        "This is too narrow. While note-taking is important, it's only one of several writing tasks James needs to complete. The SETT model requires considering all relevant tasks the student needs to perform.",
+                        "Excellent choice! The SETT model recommends analyzing the specific demands of tasks. Different assignments (notes, essays, math work) have different motor demands, and understanding these differences allows for targeted, effective accommodations."
+                    ],
+                    tools: [
+                        "This tool provides insufficient support. A basic keyboard and mouse don't address James' specific motor challenges and would likely increase his fatigue. The SETT model encourages selecting tools that effectively bridge the gap between student abilities and task demands.",
+                        "This tool is too limited. While it might help with note-taking, it doesn't address other writing tasks like essays and lab reports. The SETT model encourages selecting tools that address all relevant task demands.",
+                        "Excellent choice! This comprehensive solution addresses James' motor challenges while leveraging his cognitive strengths. Speech-to-text allows him to express his well-developed ideas, while the specialized keyboard provides access for tasks where typing is preferable."
+                    ]
+                }
+            }
+        };
+
+        // Show a specific screen and hide others
+        function showScreen(screenId) {
+            // Hide all screens
+            document.querySelectorAll('.box').forEach(screen => {
+                screen.classList.remove('active');
+                screen.style.display = 'none';
+            });
+            
+            // Show requested screen
+            const screen = document.getElementById(screenId);
+            screen.classList.add('active');
+            screen.style.display = 'block';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Add click handlers to all options
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                const scenario = this.closest('.box').id.split('-')[0]; // maya or james
+                const value = parseInt(this.getAttribute('data-value'));
+                const text = this.getAttribute('data-text');
+                
+                // Clear all selected options in this category
+                document.querySelectorAll(`.${category}-option`).forEach(opt => {
+                    opt.classList.remove(`selected-${category}`);
+                });
+                
+                // Select this option
+                this.classList.add(`selected-${category}`);
+                
+                // Save the selection
+                gameData[scenario][category].score = value;
+                gameData[scenario][category].choice = text;
+                gameData[scenario][category].selected = true;
+                
+                // Check if all categories are selected to enable submit button
+                checkSubmitButton(scenario);
+            });
+        });
+
+        // Check if all categories selected to enable submit button
+        function checkSubmitButton(scenario) {
+            const submitBtn = document.getElementById(`${scenario}-submit`);
+            if (gameData[scenario].student.selected && 
+                gameData[scenario].environment.selected && 
+                gameData[scenario].tasks.selected && 
+                gameData[scenario].tools.selected) {
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Handle Maya submission
+        function submitMaya() {
+            // Calculate total score
+            const totalScore = gameData.maya.student.score + 
+                               gameData.maya.environment.score +
+                               gameData.maya.tasks.score +
+                               gameData.maya.tools.score;
+            
+            // Set scores in feedback screen
+            document.getElementById('maya-student-score').textContent = gameData.maya.student.score;
+            document.getElementById('maya-environment-score').textContent = gameData.maya.environment.score;
+            document.getElementById('maya-tasks-score').textContent = gameData.maya.tasks.score;
+            document.getElementById('maya-tools-score').textContent = gameData.maya.tools.score;
+            
+            // Set choices in feedback screen
+            document.getElementById('maya-student-choice').textContent = gameData.maya.student.choice;
+            document.getElementById('maya-environment-choice').textContent = gameData.maya.environment.choice;
+            document.getElementById('maya-tasks-choice').textContent = gameData.maya.tasks.choice;
+            document.getElementById('maya-tools-choice').textContent = gameData.maya.tools.choice;
+            
+            // Set rationales
+            document.getElementById('maya-student-rationale').textContent = gameData.maya.rationales.student[gameData.maya.student.score];
+            document.getElementById('maya-environment-rationale').textContent = gameData.maya.rationales.environment[gameData.maya.environment.score];
+            document.getElementById('maya-tasks-rationale').textContent = gameData.maya.rationales.tasks[gameData.maya.tasks.score];
+            document.getElementById('maya-tools-rationale').textContent = gameData.maya.rationales.tools[gameData.maya.tools.score];
+            
+            // Set evaluations
+            document.getElementById('maya-student-evaluation').innerHTML = getEvaluationText('student', gameData.maya.student.score);
+            document.getElementById('maya-environment-evaluation').innerHTML = getEvaluationText('environment', gameData.maya.environment.score);
+            document.getElementById('maya-tasks-evaluation').innerHTML = getEvaluationText('tasks', gameData.maya.tasks.score);
+            document.getElementById('maya-tools-evaluation').innerHTML = getEvaluationText('tools', gameData.maya.tools.score);
+            
+            // Set overall feedback
+            let overallFeedback = "";
+            if (totalScore >= 7) {
+                overallFeedback = "Excellent work! You've thoroughly considered all aspects of the SETT model for Maya. Text-to-speech with highlighting will support her science learning while accommodating her dyslexia.";
+            } else if (totalScore >= 4) {
+                overallFeedback = "Good job! You've considered multiple factors in the SETT model. With some refinement, you could better align all elements of your recommendation.";
+            } else {
+                overallFeedback = "You've made a start, but remember that the SETT model requires careful consideration of all four components to create an effective solution.";
+            }
+            document.getElementById('maya-overall-feedback').textContent = overallFeedback;
+            
+            // Show feedback screen
+            showScreen('maya-feedback');
+        }
+        
+        // Handle James submission
+        function submitJames() {
+            // Calculate total score
+            const totalScore = gameData.james.student.score + 
+                               gameData.james.environment.score +
+                               gameData.james.tasks.score +
+                               gameData.james.tools.score;
+            
+            // Set scores in feedback screen
+            document.getElementById('james-student-score').textContent = gameData.james.student.score;
+            document.getElementById('james-environment-score').textContent = gameData.james.environment.score;
+            document.getElementById('james-tasks-score').textContent = gameData.james.tasks.score;
+            document.getElementById('james-tools-score').textContent = gameData.james.tools.score;
+            
+            // Set choices in feedback screen
+            document.getElementById('james-student-choice').textContent = gameData.james.student.choice;
+            document.getElementById('james-environment-choice').textContent = gameData.james.environment.choice;
+            document.getElementById('james-tasks-choice').textContent = gameData.james.tasks.choice;
+            document.getElementById('james-tools-choice').textContent = gameData.james.tools.choice;
+            
+            // Set rationales
+            document.getElementById('james-student-rationale').textContent = gameData.james.rationales.student[gameData.james.student.score];
+            document.getElementById('james-environment-rationale').textContent = gameData.james.rationales.environment[gameData.james.environment.score];
+            document.getElementById('james-tasks-rationale').textContent = gameData.james.rationales.tasks[gameData.james.tasks.score];
+            document.getElementById('james-tools-rationale').textContent = gameData.james.rationales.tools[gameData.james.tools.score];
+            
+            // Set evaluations
+            document.getElementById('james-student-evaluation').innerHTML = getEvaluationText('student', gameData.james.student.score);
+            document.getElementById('james-environment-evaluation').innerHTML = getEvaluationText('environment', gameData.james.environment.score);
+            document.getElementById('james-tasks-evaluation').innerHTML = getEvaluationText('tasks', gameData.james.tasks.score);
+            document.getElementById('james-tools-evaluation').innerHTML = getEvaluationText('tools', gameData.james.tools.score);
+            
+            // Set overall feedback
+            let overallFeedback = "";
+            if (totalScore >= 7) {
+                overallFeedback = "Excellent! You've thoroughly analyzed James' needs across all SETT components. Speech-to-text with a specialized keyboard will address his motor challenges while supporting his cognitive strengths.";
+            } else if (totalScore >= 4) {
+                overallFeedback = "Good thinking. You've considered several important SETT factors. With more integration between the components, your solution would better address James' comprehensive needs.";
+            } else {
+                overallFeedback = "Your approach needs more consideration of all SETT components. Remember that effective AT solutions require integrating information about the student, environment, tasks, and potential tools.";
+            }
+            document.getElementById('james-overall-feedback').textContent = overallFeedback;
+            
+            // Show feedback screen
+            showScreen('james-feedback');
+        }
+        
+        // Helper function to get evaluation text based on score
+        function getEvaluationText(category, score) {
+            if (score === 2) {
+                return '<span class="excellent">✓ Excellent choice</span>';
+            } else if (score === 1) {
+                return '<span class="good">△ Partially correct</span>';
+            } else {
+                return '<span class="needs-improvement">✗ Consider a different approach</span>';
+            }
+        }
+        
+        // Reset game to start over
+        function resetGame() {
+            // Reset all data
+            gameData.maya.student = { score: 0, choice: "", selected: false };
+            gameData.maya.environment = { score: 0, choice: "", selected: false };
+            gameData.maya.tasks = { score: 0, choice: "", selected: false };
+            gameData.maya.tools = { score: 0, choice: "", selected: false };
+            
+            gameData.james.student = { score: 0, choice: "", selected: false };
+            gameData.james.environment = { score: 0, choice: "", selected: false };
+            gameData.james.tasks = { score: 0, choice: "", selected: false };
+            gameData.james.tools = { score: 0, choice: "", selected: false };
+            
+            // Clear all selections
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected-student');
+                option.classList.remove('selected-environment');
+                option.classList.remove('selected-tasks');
+                option.classList.remove('selected-tools');
+            });
+            
+            // Disable submit buttons
+            document.getElementById('maya-submit').disabled = true;
+            document.getElementById('james-submit').disabled = true;
+            
+            // Show intro screen
+            showScreen('intro-screen');
+        }
+        
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make sure only the intro screen is visible initially
+            showScreen('intro-screen');
+        });
+    </script>
+</body>
+</html>
