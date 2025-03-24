@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SETT Quest</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SETT Quest</h1>
+        <p>Apply the SETT model to make assistive technology decisions.</p>
+        <div id="game-content">
+            <button onclick="startGame()">Start Game</button>
+        </div>
+    </div>
+
+    <script>
+        let gameState = 'intro';
+        let studentScore = 0, environmentScore = 0, tasksScore = 0, toolsScore = 0;
+        let feedback = '';
+
+        function startGame() {
+            gameState = 'playing';
+            document.getElementById('game-content').innerHTML = `
+                <h2>Scenario 1: Maya</h2>
+                <p>Maya is a 3rd-grade student with dyslexia...</p>
+                <button onclick="chooseOption(2)">Consider both dyslexia & science interest</button>
+                <button onclick="chooseOption(0)">Focus only on reading deficits</button>
+                <button onclick="chooseOption(1)">Evaluate verbal strengths too</button>
+            `;
+        }
+
+        function chooseOption(score) {
+            studentScore = score;
+            feedback = score === 2 ? "Excellent choice! You considered strengths and challenges." :
+                      score === 1 ? "Good choice, but consider all aspects." :
+                                   "Needs work. Consider the student's interests too.";
+
+            document.getElementById('game-content').innerHTML = `
+                <h2>Results</h2>
+                <p>${feedback}</p>
+                <button onclick="printResults()">Print Results</button>
+                <button onclick="startGame()">Restart</button>
+            `;
+        }
+
+        function printResults() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
