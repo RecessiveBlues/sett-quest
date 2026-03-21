@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>RED BARON</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: monospace; touch-action: none; }
+  #wrap { position: relative; display: flex; flex-direction: column; align-items: center; }
+  canvas { border: 2px solid #0f0; display: block; max-width: 100vw; max-height: 80vh; }
+  #ui { color: #0f0; font-size: 14px; text-align: center; margin-bottom: 4px; letter-spacing: 2px; }
+  #msg { color: #ff0; font-size: 18px; text-align: center; margin-top: 4px; letter-spacing: 3px; min-height: 24px; }
+
+  /* Fire button — shown only on touch devices */
+  #fireBtn {
+    display: none;
+    position: fixed;
+    right: 0; top: 0; bottom: 0;
+    width: 30vw;
+    background: rgba(255,50,0,0.18);
+    border: 3px solid rgba(255,80,0,0.5);
+    border-right: none;
+    color: #f80;
+    font-family: monospace;
+    font-size: clamp(18px, 5vw, 32px);
+    font-weight: bold;
+    letter-spacing: 3px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    align-items: center;
+    justify-content: center;
+  }
+  #fireBtn.visible { display: flex; }
+
+  /* Calibrate button */
+  #calBtn {
+    display: none;
+    position: fixed;
+    left: 8px; bottom: 8px;
+    background: rgba(0,200,0,0.2);
+    border: 1px solid #0a0;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 11px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    user-select: none;
+  }
+  #calBtn.visible { display: block; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="ui">SCORE: <span id="score">0</span> &nbsp;&nbsp; LIVES: <span id="lives">3</span> &nbsp;&nbsp; WAVE: <span id="wave">1</span></div>
+  <canvas id="c" width="640" height="480"></canvas>
+  <div id="msg">TAP TO START</div>
+</div>
+<button id="fireBtn">FIRE</button>
+<button id="calBtn">RECAL</button>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const CX = W/2, CY = H/2;
+
+// --- Vector math helpers ---
+function project(p3, fov=300) {
+  const z = Math.max(p3.z, 1);
+  return { x: CX + p3.x * fov / z, y: CY + p3.y * fov / z };
+}
+
+// --- Game state ---
+let state = 'title';
+let score = 0, lives = 3, wave = 1;
+let enemies = [], bullets = [], particles = [];
+let playerAngleX = 0, playerAngleY = 0;
+let shootCooldown = 0;
+let enemiesPerWave = 5;
+let flashTimer = 0;
+let invincible = 0;
+
+// --- Gyroscope state ---
+let gyroEnabled = false;
+let calBeta = 0, calGamma = 0;   // calibration offsets
+let rawBeta = 0, rawGamma = 0;   // latest readings
+const GYRO_SENS_H = 0.022;       // horizontal sensitivity
+const GYRO_SENS_V = 0.018;       // vertical sensitivity
+
+function calibrate() {
+  calBeta = rawBeta;
+  calGamma = rawGamma;
+}
+
+function setupGyro() {
+  // iOS 13+ requires permission
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+      .then(r => { if (r === 'granted') listenOrientation(); })
+      .catch(() => {});
+  } else {
+    listenOrientation();
+  }
+}
+
+function listenOrientation() {
+  window.addEventListener('deviceorientation', e => {
+    if (e.beta === null) return;
+    rawBeta  = e.beta  ?? 0;
+    rawGamma = e.gamma ?? 0;
+    gyroEnabled = true;
+  }, true);
+}
+
+// --- Touch / mobile detection ---
+const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isTouchDevice) {
+  document.getElementById('fireBtn').classList.add('visible');
+  document.getElementById('calBtn').classList.add('visible');
+  document.getElementById('msg').textContent = 'TAP TO START';
+} else {
+  document.getElementById('msg').textContent = 'PRESS SPACE TO START';
+}
+
+// Fire button touch
+const fireBtn = document.getElementById('fireBtn');
+let fireBtnDown = false;
+fireBtn.addEventListener('touchstart', e => { e.preventDefault(); fireBtnDown = true; }, {passive:false});
+fireBtn.addEventListener('touchend',   e => { e.preventDefault(); fireBtnDown = false; }, {passive:false});
+fireBtn.addEventListener('mousedown',  () => fireBtnDown = true);
+fireBtn.addEventListener('mouseup',    () => fireBtnDown = false);
+
+// Calibrate button
+document.getElementById('calBtn').addEventListener('click', calibrate);
+document.getElementById('calBtn').addEventListener('touchstart', e => { e.preventDefault(); calibrate(); }, {passive:false});
+
+// Tap on canvas / body to start/continue
+document.addEventListener('touchstart', e => {
+  if (e.target === fireBtn) return;
+  if (state === 'title')    { setupGyro(); startGame(); }
+  if (state === 'gameover') { setupGyro(); startGame(); }
+  if (state === 'dead')     respawn();
+}, {passive:true});
+
+// --- Keyboard ---
+const keys = {};
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'Space' && state === 'title')    startGame();
+  if (e.code === 'Space' && state === 'gameover') startGame();
+  if (e.code === 'Space' && state === 'dead')     respawn();
+  e.preventDefault();
+});
+document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// --- Game functions ---
+function startGame() {
+  score = 0; lives = 3; wave = 1;
+  enemies = []; bullets = []; particles = [];
+  playerAngleX = 0; playerAngleY = 0;
+  calibrate();
+  state = 'playing';
+  spawnWave();
+  updateUI();
+}
+
+function respawn() {
+  playerAngleX = 0; playerAngleY = 0;
+  enemies = []; bullets = [];
+  invincible = 180;
+  calibrate();
+  state = 'playing';
+  spawnWave();
+}
+
+function updateUI() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('lives').textContent = lives;
+  document.getElementById('wave').textContent = wave;
+}
+
+function spawnWave() {
+  enemies = [];
+  const count = enemiesPerWave + (wave - 1) * 2;
+  for (let i = 0; i < count; i++) spawnEnemy(i * 60);
+  if (wave % 2 === 0) for (let i = 0; i < 3; i++) spawnBalloon();
+  document.getElementById('msg').textContent = 'WAVE ' + wave;
+  setTimeout(() => { if (state === 'playing') document.getElementById('msg').textContent = ''; }, 1500);
+}
+
+function spawnEnemy(delay) {
+  const angle = Math.random() * Math.PI * 2;
+  const dist  = 900 + Math.random() * 400;
+  const speed = 1.5 + wave * 0.3 + Math.random() * 1.5;
+  enemies.push({
+    x: Math.cos(angle) * dist,
+    y: (Math.random() - 0.5) * 300,
+    z: Math.sin(angle) * dist + 1500,
+    vx: -Math.cos(angle) * speed,
+    vy: (Math.random() - 0.5) * 0.5,
+    vz: -Math.sin(angle) * speed - speed,
+    delay, alive: true, type: 'plane', health: 1,
+    shootTimer: Math.random() * 120, color: '#f00', bank: 0,
+  });
+}
+
+function spawnBalloon() {
+  enemies.push({
+    x: (Math.random() - 0.5) * 600,
+    y: 100 + Math.random() * 150,
+    z: 500 + Math.random() * 1000,
+    vx: 0, vy: 0, vz: -0.3,
+    delay: 0, alive: true, type: 'balloon', health: 1,
+    shootTimer: 999, color: '#ff0', bank: 0,
+  });
+}
+
+// --- 3D helpers ---
+function drawLine3D(a, b, color, alpha=1) {
+  const pa = project(a), pb = project(b);
+  ctx.strokeStyle = color;
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.moveTo(pa.x, pa.y);
+  ctx.lineTo(pb.x, pb.y);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function rotateY(p, a) {
+  const cos = Math.cos(a), sin = Math.sin(a);
+  return { x: p.x*cos + p.z*sin, y: p.y, z: -p.x*sin + p.z*cos };
+}
+function rotateX(p, a) {
+  const cos = Math.cos(a), sin = Math.sin(a);
+  return { x: p.x, y: p.y*cos - p.z*sin, z: p.y*sin + p.z*cos };
+}
+function worldToCamera(wx, wy, wz) {
+  let p = {x:wx, y:wy, z:wz};
+  p = rotateY(p, -playerAngleY);
+  p = rotateX(p, -playerAngleX);
+  return p;
+}
+
+function drawBiplane(ex, ey, ez, bank, color) {
+  const s = 40;
+  const pts = {
+    nose: {x:0,      y:0,        z:-s*0.8},
+    tail: {x:0,      y:0,        z: s*0.8},
+    uwl:  {x:-s,     y:-s*0.1,   z:0},
+    uwr:  {x: s,     y:-s*0.1,   z:0},
+    lwl:  {x:-s*0.7, y: s*0.15,  z: s*0.1},
+    lwr:  {x: s*0.7, y: s*0.15,  z: s*0.1},
+    twl:  {x:-s*0.4, y:0,        z: s*0.7},
+    twr:  {x: s*0.4, y:0,        z: s*0.7},
+    tv:   {x:0,      y:-s*0.35,  z: s*0.75},
+  };
+  function bankPt(p) {
+    const cos = Math.cos(bank), sin = Math.sin(bank);
+    return { x: p.x*cos - p.y*sin, y: p.x*sin + p.y*cos, z: p.z };
+  }
+  function toWorld(p) {
+    const bp = bankPt(p);
+    return worldToCamera(ex+bp.x, ey+bp.y, ez+bp.z);
+  }
+  const tp = {};
+  for (const k in pts) tp[k] = toWorld(pts[k]);
+  if (tp.nose.z < 5) return;
+  ctx.lineWidth = 1.5;
+  const edges = [
+    ['nose','tail'],['uwl','uwr'],['lwl','lwr'],
+    ['uwl','nose'],['uwr','nose'],['lwl','nose'],['lwr','nose'],
+    ['uwl','tail'],['uwr','tail'],['twl','twr'],
+    ['twl','tail'],['twr','tail'],['tv','tail'],
+  ];
+  for (const [a,b] of edges) {
+    if (tp[a].z > 5 && tp[b].z > 5) drawLine3D(tp[a], tp[b], color);
+  }
+  ctx.lineWidth = 1;
+}
+
+function drawBalloon(ex, ey, ez, color) {
+  const s = 35, segs = 8;
+  const pts = [];
+  for (let i = 0; i < segs; i++) {
+    const a = (i/segs)*Math.PI*2;
+    pts.push(worldToCamera(ex+Math.cos(a)*s, ey+Math.sin(a)*s*1.3, ez));
+  }
+  if (pts[0].z < 5) return;
+  ctx.lineWidth = 1.5; ctx.strokeStyle = color;
+  ctx.beginPath();
+  const p0 = project(pts[0]); ctx.moveTo(p0.x, p0.y);
+  for (let i=1;i<segs;i++) { const pp=project(pts[i]); ctx.lineTo(pp.x,pp.y); }
+  ctx.closePath(); ctx.stroke();
+  const bpts = [
+    worldToCamera(ex-s*0.3, ey+s*1.5, ez), worldToCamera(ex+s*0.3, ey+s*1.5, ez),
+    worldToCamera(ex+s*0.3, ey+s*1.8, ez), worldToCamera(ex-s*0.3, ey+s*1.8, ez),
+  ];
+  if (bpts.every(p=>p.z>5)) {
+    ctx.beginPath();
+    const bp=project(bpts[0]); ctx.moveTo(bp.x,bp.y);
+    for(let i=1;i<4;i++){const pp=project(bpts[i]);ctx.lineTo(pp.x,pp.y);}
+    ctx.closePath(); ctx.stroke();
+    drawLine3D(worldToCamera(ex-s*0.2,ey+s*1.3,ez), bpts[0], color);
+    drawLine3D(worldToCamera(ex+s*0.2,ey+s*1.3,ez), bpts[1], color);
+  }
+  ctx.lineWidth = 1;
+}
+
+function drawCockpit() {
+  ctx.strokeStyle = '#884400'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(CX-100, H-60); ctx.lineTo(CX-30, CY+30);
+  ctx.moveTo(CX+100, H-60); ctx.lineTo(CX+30, CY+30);
+  ctx.moveTo(0, H-60);      ctx.lineTo(W, H-60);
+  ctx.stroke();
+  ctx.strokeStyle = '#0f0'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(CX-20,CY); ctx.lineTo(CX-8,CY);
+  ctx.moveTo(CX+8,CY);  ctx.lineTo(CX+20,CY);
+  ctx.moveTo(CX,CY-20); ctx.lineTo(CX,CY-8);
+  ctx.moveTo(CX,CY+8);  ctx.lineTo(CX,CY+20);
+  ctx.beginPath(); ctx.arc(CX,CY,14,0,Math.PI*2); ctx.stroke();
+  ctx.lineWidth = 1;
+}
+
+function drawGround() {
+  const gridSize=300, lines=10;
+  for (let i=-lines;i<=lines;i++) {
+    const wx=i*gridSize, wy=200;
+    for (let z=200;z<3000;z+=200) {
+      const a=worldToCamera(wx,wy,z), b=worldToCamera(wx,wy,z+200);
+      if(a.z>5&&b.z>5) drawLine3D(a,b,'#004400');
+    }
+    for (let z=200;z<3000;z+=200) {
+      const a=worldToCamera(-lines*gridSize,wy,z), b=worldToCamera(lines*gridSize,wy,z);
+      if(a.z>5&&b.z>5) drawLine3D(a,b,'#004400');
+    }
+  }
+}
+
+function drawMountains() {
+  const peaks=[[-800,-250,2800],[-300,-320,3200],[200,-280,2900],[600,-350,3100],[1000,-240,2700],[-1100,-200,3000]];
+  for (let i=0;i<peaks.length-1;i++) {
+    const [ax,ay,az]=peaks[i];
+    const ba=worldToCamera(ax-200,300,az), pk=worldToCamera(ax,ay,az), bb=worldToCamera(ax+200,300,az);
+    if(pk.z>5){ drawLine3D(ba,pk,'#006600'); drawLine3D(pk,bb,'#006600'); }
+  }
+}
+
+function spawnEnemyBullet(ex, ey, ez) {
+  const len=Math.sqrt(ex*ex+ey*ey+ez*ez);
+  if(len<1) return;
+  const speed=8;
+  bullets.push({x:ex,y:ey,z:ez, vx:-ex/len*speed, vy:-ey/len*speed, vz:-ez/len*speed, owner:'enemy', life:80});
+}
+
+function playerShoot() {
+  if(shootCooldown>0) return;
+  shootCooldown=12;
+  const dx=Math.sin(playerAngleY), dy=-Math.sin(playerAngleX), dz=Math.cos(playerAngleY), speed=25;
+  bullets.push({x:0,y:0,z:50, vx:dx*speed, vy:dy*speed, vz:dz*speed, owner:'player', life:50});
+}
+
+function spawnExplosion(x,y,z,color) {
+  for(let i=0;i<12;i++){
+    const a=Math.random()*Math.PI*2, b=Math.random()*Math.PI, sp=2+Math.random()*4;
+    particles.push({x,y,z, vx:Math.cos(a)*Math.sin(b)*sp, vy:Math.cos(b)*sp, vz:Math.sin(a)*Math.sin(b)*sp,
+      life:30+Math.random()*20, maxLife:50, color});
+  }
+}
+
+// --- Update ---
+function update() {
+  if(state !== 'playing') return;
+
+  if(invincible>0) invincible--;
+  if(shootCooldown>0) shootCooldown--;
+  if(flashTimer>0) flashTimer--;
+
+  // Gyroscope aim (when tilt is available)
+  if(gyroEnabled) {
+    // Determine screen orientation angle
+    const orientAngle = (screen.orientation?.angle ?? window.orientation ?? 0);
+    let dH, dV;
+    // Map raw sensor axes to game axes based on device orientation
+    if(Math.abs(orientAngle) === 90 || Math.abs(orientAngle) === 270) {
+      // Landscape: gamma drives vertical, beta drives horizontal
+      const sign = orientAngle === 90 ? 1 : -1;
+      dH = (rawBeta  - calBeta)  * GYRO_SENS_H * sign;
+      dV = (rawGamma - calGamma) * GYRO_SENS_V * -sign;
+    } else {
+      // Portrait: gamma = left/right, beta = forward/back
+      dH =  (rawGamma - calGamma) * GYRO_SENS_H;
+      dV = -(rawBeta  - calBeta)  * GYRO_SENS_V;
+    }
+    playerAngleY = dH;
+    playerAngleX = Math.max(-0.7, Math.min(0.7, dV));
+  } else {
+    // Keyboard fallback
+    const ts = 0.025;
+    if(keys['ArrowLeft']  || keys['KeyA']) playerAngleY -= ts;
+    if(keys['ArrowRight'] || keys['KeyD']) playerAngleY += ts;
+    if(keys['ArrowUp']    || keys['KeyW']) playerAngleX -= ts;
+    if(keys['ArrowDown']  || keys['KeyS']) playerAngleX += ts;
+    playerAngleX = Math.max(-0.7, Math.min(0.7, playerAngleX));
+  }
+
+  if(keys['Space'] || keys['KeyZ'] || fireBtnDown) playerShoot();
+
+  // Update enemies
+  for(const e of enemies) {
+    if(!e.alive) continue;
+    if(e.delay>0){ e.delay--; continue; }
+    e.x+=e.vx; e.y+=e.vy; e.z+=e.vz;
+    if(e.type==='plane') {
+      e.bank+=(e.vx*0.05-e.bank)*0.1;
+      e.shootTimer--;
+      if(e.shootTimer<=0){
+        e.shootTimer=80+Math.random()*60;
+        const d=Math.sqrt(e.x*e.x+e.y*e.y+e.z*e.z);
+        if(d<1200) spawnEnemyBullet(e.x,e.y,e.z);
+      }
+    }
+    if(e.z<-200){
+      const angle=Math.random()*Math.PI*2, dist=800+Math.random()*500, speed=Math.abs(e.vz);
+      e.x=Math.cos(angle)*dist; e.z=Math.sin(angle)*dist+1200;
+      e.y=(Math.random()-0.5)*250;
+      e.vx=-Math.cos(angle)*speed; e.vz=-Math.sin(angle)*speed-speed;
+    }
+  }
+
+  for(const b of bullets){ b.x+=b.vx; b.y+=b.vy; b.z+=b.vz; b.life--; }
+
+  // Player bullets vs enemies
+  for(const b of bullets){
+    if(b.owner!=='player'||b.life<=0) continue;
+    for(const e of enemies){
+      if(!e.alive||e.delay>0) continue;
+      const hitR=e.type==='balloon'?50:40;
+      const dx=b.x-e.x, dy=b.y-e.y, dz=b.z-e.z;
+      if(dx*dx+dy*dy+dz*dz<hitR*hitR){
+        e.alive=false; b.life=0;
+        spawnExplosion(e.x,e.y,e.z,e.type==='balloon'?'#ff0':'#f80');
+        score+=e.type==='balloon'?200:100;
+        updateUI(); break;
+      }
+    }
+  }
+
+  // Enemy bullets vs player
+  if(invincible<=0){
+    for(const b of bullets){
+      if(b.owner!=='enemy'||b.life<=0) continue;
+      if(b.x*b.x+b.y*b.y+b.z*b.z<30*30){ b.life=0; playerHit(); break; }
+    }
+  }
+
+  // Enemy collision with player
+  if(invincible<=0){
+    for(const e of enemies){
+      if(!e.alive||e.delay>0) continue;
+      if(e.x*e.x+e.y*e.y+e.z*e.z<60*60){ e.alive=false; spawnExplosion(e.x,e.y,e.z,'#f80'); playerHit(); break; }
+    }
+  }
+
+  bullets = bullets.filter(b=>b.life>0);
+  for(const p of particles){ p.x+=p.vx; p.y+=p.vy; p.z+=p.vz; p.life--; }
+  particles = particles.filter(p=>p.life>0);
+
+  const alive=enemies.filter(e=>e.alive).length;
+  if(alive===0&&enemies.length>0){
+    wave++; enemies=[]; bullets=[];
+    spawnWave(); updateUI();
+  }
+}
+
+function playerHit() {
+  flashTimer=20; lives--; updateUI();
+  if(lives<=0){
+    state='gameover';
+    document.getElementById('msg').textContent = isTouchDevice ? 'GAME OVER - TAP TO RETRY' : 'GAME OVER - PRESS SPACE';
+  } else {
+    state='dead';
+    document.getElementById('msg').textContent = isTouchDevice ? 'TAP TO CONTINUE' : 'PRESS SPACE TO CONTINUE';
+  }
+}
+
+// --- Draw ---
+function draw() {
+  const grad=ctx.createLinearGradient(0,0,0,H*0.75);
+  grad.addColorStop(0,'#000011'); grad.addColorStop(1,'#001133');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+
+  if(flashTimer>0){ ctx.fillStyle=`rgba(255,0,0,${flashTimer/20*0.4})`; ctx.fillRect(0,0,W,H); }
+
+  drawMountains(); drawGround();
+
+  for(const b of bullets){
+    const cp=worldToCamera(b.x,b.y,b.z); if(cp.z<5) continue;
+    const pp=project(cp);
+    ctx.fillStyle=b.owner==='player'?'#fff':'#f44';
+    ctx.beginPath(); ctx.arc(pp.x,pp.y,b.owner==='player'?3:2,0,Math.PI*2); ctx.fill();
+  }
+
+  for(const e of enemies){
+    if(!e.alive||e.delay>0) continue;
+    if(e.type==='plane') drawBiplane(e.x,e.y,e.z,e.bank,e.color);
+    else drawBalloon(e.x,e.y,e.z,e.color);
+  }
+
+  for(const p of particles){
+    const cp=worldToCamera(p.x,p.y,p.z); if(cp.z<5) continue;
+    const pp=project(cp);
+    ctx.globalAlpha=p.life/p.maxLife; ctx.fillStyle=p.color;
+    ctx.fillRect(pp.x-2,pp.y-2,4,4); ctx.globalAlpha=1;
+  }
+
+  drawCockpit();
+
+  if(invincible>0&&Math.floor(invincible/8)%2===0){
+    ctx.fillStyle='rgba(0,255,0,0.15)'; ctx.fillRect(0,0,W,H);
+  }
+
+  if(state==='title'){
+    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#f00'; ctx.font='bold 56px monospace'; ctx.textAlign='center';
+    ctx.fillText('RED BARON', CX, CY-50);
+    ctx.fillStyle='#0f0'; ctx.font='16px monospace';
+    if(isTouchDevice){
+      ctx.fillText('TILT PHONE TO AIM', CX, CY+10);
+      ctx.fillText('TAP FIRE BUTTON (RIGHT)', CX, CY+36);
+    } else {
+      ctx.fillText('ARROWS / WASD: AIM', CX, CY+10);
+      ctx.fillText('SPACE / Z: FIRE', CX, CY+36);
+    }
+    ctx.fillStyle='#ff0'; ctx.font='22px monospace';
+    ctx.fillText(isTouchDevice?'TAP TO START':'PRESS SPACE TO START', CX, CY+90);
+    ctx.textAlign='left';
+  }
+}
+
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+loop();
+</script>
+</body>
+</html>
