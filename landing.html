@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark A. Bates — Training & Instructional Support Professional</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1a2e4a;
+      --teal: #2a7d7d;
+      --teal-light: #3a9b9b;
+      --accent: #e8f4f4;
+      --text: #2d3748;
+      --muted: #718096;
+      --border: #e2e8f0;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      background: #f7fafc;
+      line-height: 1.6;
+    }
+
+    /* ── HERO ── */
+    header {
+      background: linear-gradient(135deg, var(--navy) 0%, #26455e 60%, var(--teal) 100%);
+      color: var(--white);
+      padding: 72px 24px 60px;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--teal-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--white);
+      margin: 0 auto 24px;
+      border: 4px solid rgba(255,255,255,0.3);
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    header .tagline {
+      font-size: 1.15rem;
+      opacity: 0.85;
+      max-width: 560px;
+      margin: 0 auto 28px;
+    }
+
+    .contact-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      font-size: 0.92rem;
+      opacity: 0.9;
+    }
+
+    .contact-bar a {
+      color: var(--white);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .contact-bar a:hover { opacity: 0.75; }
+
+    /* ── LAYOUT ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 40px;
+    }
+
+    @media (max-width: 720px) {
+      main { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.8rem; }
+    }
+
+    /* ── SECTIONS ── */
+    section { margin-bottom: 40px; }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--teal);
+      border-bottom: 2px solid var(--teal);
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+    }
+
+    /* ── SUMMARY ── */
+    .summary p {
+      font-size: 1.02rem;
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    /* ── EXPERIENCE ── */
+    .job { margin-bottom: 28px; }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .job-title { font-weight: 700; font-size: 1rem; color: var(--navy); }
+
+    .job-meta {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .job-company {
+      font-size: 0.92rem;
+      color: var(--teal);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .job ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .job ul li {
+      font-size: 0.93rem;
+      padding: 3px 0 3px 16px;
+      position: relative;
+      color: var(--text);
+    }
+
+    .job ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--teal);
+      font-size: 0.75rem;
+      top: 5px;
+    }
+
+    /* ── SELECTED PROJECTS ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 560px) { .projects-grid { grid-template-columns: 1fr; } }
+
+    .project-card {
+      background: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+
+    .project-card h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .project-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar section { margin-bottom: 32px; }
+
+    /* Skills */
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .skill-tag {
+      background: var(--accent);
+      border: 1px solid var(--teal-light);
+      color: var(--teal);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    /* Education */
+    .edu-item { margin-bottom: 14px; }
+
+    .edu-item .degree {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--navy);
+    }
+
+    .edu-item .school {
+      font-size: 0.87rem;
+      color: var(--muted);
+    }
+
+    /* Certifications */
+    .cert-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .cert-list li {
+      font-size: 0.87rem;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cert-list li:last-child { border-bottom: none; }
+
+    .cert-list li::before {
+      content: '✓';
+      color: var(--teal);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Strengths */
+    .strengths {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .strength-tag {
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <header>
+    <div class="avatar">MB</div>
+    <h1>Mark A. Bates</h1>
+    <p class="tagline">Training &amp; Instructional Support Professional — Adult Learning · Workshop Facilitation · Assistive Technology</p>
+    <div class="contact-bar">
+      <a href="tel:+15066080516">&#128222; 1-506-608-0516</a>
+      <a href="mailto:contact@markabates.ca">&#9993; contact@markabates.ca</a>
+      <a href="https://www.linkedin.com/in/mark-a-bates" target="_blank" rel="noopener">&#128279; LinkedIn</a>
+      <span>&#128205; Quispamsis, NB</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- LEFT COLUMN -->
+    <div class="main-col">
+
+      <!-- Summary -->
+      <section class="summary">
+        <h2>About</h2>
+        <p>Training and instructional support professional with experience working with adult learners in education and district settings. Delivers practical, skills-focused learning through workshops, coaching, and structured training materials that support consistent application in day-to-day work. Brings a clear, organized approach to content, documentation, and coordination, with attention to accessibility, usability, and real-world relevance.</p>
+      </section>
+
+      <!-- Experience -->
+      <section>
+        <h2>Experience</h2>
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">Assistive Technology &amp; Adaptive Equipment Lead</span>
+            <span class="job-meta">Sep 2024 – Jun 2025</span>
+          </div>
+          <div class="job-company">Anglophone South School District (Secondment)</div>
+          <ul>
+            <li>Coordinated service delivery across 70+ schools including intake and follow-up</li>
+            <li>Developed processes and documentation to improve consistency</li>
+            <li>Trained staff, students, and families on assistive tools</li>
+            <li>Built tracking systems in SharePoint and Excel</li>
+          </ul>
+        </div>
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">Technology Coach / Technology Mentor</span>
+            <span class="job-meta">2006–2008 · 2010–2013 · 2021–2023</span>
+          </div>
+          <div class="job-company">Anglophone South School District (Secondment Assignments)</div>
+          <ul>
+            <li>Delivered professional learning for adult users on digital tools and workflows</li>
+            <li>Developed structured training materials including modules, job aids, and guides</li>
+            <li>Facilitated workshops, small-group sessions, and coaching</li>
+            <li>Partnered with stakeholders to align training with operational needs</li>
+            <li>Supported system-wide changes through training and communication</li>
+            <li>Maintained organized repositories of learning resources</li>
+          </ul>
+        </div>
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">Teacher — Technology, Visual Arts, Social Studies</span>
+            <span class="job-meta">2022–Present</span>
+          </div>
+          <div class="job-company">Anglophone South School District</div>
+          <ul>
+            <li>Designed and delivered structured, technology-supported learning experiences</li>
+            <li>Created digital modules and tutorials</li>
+            <li>Introduced tools and routines with emphasis on consistency</li>
+          </ul>
+        </div>
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">Teacher — K–8 Various Roles</span>
+            <span class="job-meta">2002–2021</span>
+          </div>
+          <div class="job-company">New Brunswick and Nova Scotia</div>
+          <ul>
+            <li>Delivered classroom instruction across subjects with structured routines and supports</li>
+            <li>Integrated digital tools and assistive supports to improve learner access and participation</li>
+          </ul>
+        </div>
+
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">Web Designer &amp; Owner</span>
+            <span class="job-meta">2010–Present</span>
+          </div>
+          <div class="job-company">Loyalist City Web Design</div>
+          <ul>
+            <li>Designed and maintained client websites with quality assurance processes</li>
+            <li>Trained clients on CMS platforms</li>
+            <li>Developed guides and repeatable processes</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section>
+        <h2>Selected Projects</h2>
+        <div class="projects-grid">
+          <div class="project-card">
+            <h4>Training Hub (SharePoint)</h4>
+            <p>Organized onboarding resources into a centralized, accessible knowledge base</p>
+          </div>
+          <div class="project-card">
+            <h4>Digital Training Modules</h4>
+            <p>Developed self-paced learning resources for district-wide professional development</p>
+          </div>
+          <div class="project-card">
+            <h4>Best Practice Toolkit</h4>
+            <p>Created standardized checklists to ensure consistency across service delivery</p>
+          </div>
+          <div class="project-card">
+            <h4>AskSETT AI Chatbot</h4>
+            <p>Built an AI-powered tool to improve efficiency of assistive technology support requests</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <section>
+        <h2>Core Skills</h2>
+        <div class="skills-list">
+          <span class="skill-tag">Adult Learning &amp; Facilitation</span>
+          <span class="skill-tag">Training Materials Development</span>
+          <span class="skill-tag">Workshop Delivery</span>
+          <span class="skill-tag">Coaching</span>
+          <span class="skill-tag">Stakeholder Collaboration</span>
+          <span class="skill-tag">Process Documentation</span>
+          <span class="skill-tag">Standard Operating Procedures</span>
+          <span class="skill-tag">Program Coordination</span>
+          <span class="skill-tag">Learning Platforms</span>
+          <span class="skill-tag">Accessibility &amp; Inclusive Practices</span>
+          <span class="skill-tag">SharePoint</span>
+          <span class="skill-tag">Excel</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>Education</h2>
+        <div class="edu-item">
+          <div class="degree">Master of Educational Technology</div>
+          <div class="school">University of British Columbia</div>
+        </div>
+        <div class="edu-item">
+          <div class="degree">Bachelor of Education</div>
+          <div class="school">Acadia University</div>
+        </div>
+        <div class="edu-item">
+          <div class="degree">Bachelor of Arts — Sociology</div>
+          <div class="school">Acadia University</div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Certifications</h2>
+        <ul class="cert-list">
+          <li>NB Teacher Certification</li>
+          <li>Certified Microsoft Innovative Educator</li>
+          <li>Cybersecurity Fundamentals</li>
+          <li>SchoolAI Certified Educator</li>
+          <li>Camtasia Certification</li>
+          <li>Microsoft 365 Copilot</li>
+          <li>Canva for Work</li>
+          <li>ChatGPT Foundations</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Additional Strengths</h2>
+        <div class="strengths">
+          <span class="strength-tag">Clear Communication</span>
+          <span class="strength-tag">Strong Follow-through</span>
+          <span class="strength-tag">Detail-oriented QA</span>
+          <span class="strength-tag">Policy &amp; Accessibility</span>
+        </div>
+      </section>
+
+    </aside>
+  </main>
+
+  <footer>
+    &copy; 2026 Mark A. Bates · Quispamsis, NB · <a href="mailto:contact@markabates.ca" style="color:var(--teal)">contact@markabates.ca</a>
+  </footer>
+
+</body>
+</html>
