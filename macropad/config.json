@@ -1,0 +1,23 @@
+{
+  "_comment": "Each key on the pad is flashed to send F13-F18 (keys no normal keyboard has). macropad.py run listens for those and launches the program. Change 'launch' to whatever you want; use null to leave a key unused.",
+
+  "keys": {
+    "f13": { "label": "top-left",      "launch": "notepad" },
+    "f14": { "label": "top-right",     "launch": "calc" },
+    "f15": { "label": "middle-left",   "launch": "https://www.google.com" },
+    "f16": { "label": "middle-right",  "launch": "explorer" },
+    "f17": { "label": "bottom-left",   "launch": null },
+    "f18": { "label": "bottom-right",  "launch": null }
+  },
+
+  "knob": {
+    "ccw": "volumedown",
+    "press": "mute",
+    "cw": "volumeup"
+  },
+
+  "led": {
+    "mode": 1,
+    "color": "cyan"
+  }
+}
