@@ -1,23 +1,40 @@
 {
-  "_comment": "Each key on the pad is flashed to send F13-F18 (keys no normal keyboard has). macropad.py run listens for those and launches the program. Change 'launch' to whatever you want; use null to leave a key unused.",
-
+  "_comment": "Edit with macropad_gui.py, or by hand. The pad's keys send F13-F18; 'launch' is the program, file, folder or website each one opens (null = nothing). 'model' is filled in automatically the first time you send to the pad.",
+  "model": null,
   "keys": {
-    "f13": { "label": "top-left",      "launch": "notepad" },
-    "f14": { "label": "top-right",     "launch": "calc" },
-    "f15": { "label": "middle-left",   "launch": "https://www.google.com" },
-    "f16": { "label": "middle-right",  "launch": "explorer" },
-    "f17": { "label": "bottom-left",   "launch": null },
-    "f18": { "label": "bottom-right",  "launch": null }
+    "f13": {
+      "label": "Notepad",
+      "launch": "notepad"
+    },
+    "f14": {
+      "label": "Calculator",
+      "launch": "calc"
+    },
+    "f15": {
+      "label": "Google",
+      "launch": "https://www.google.com"
+    },
+    "f16": {
+      "label": "Files",
+      "launch": "explorer"
+    },
+    "f17": {
+      "label": "",
+      "launch": null
+    },
+    "f18": {
+      "label": "",
+      "launch": null
+    }
   },
-
   "knob": {
     "ccw": "volumedown",
     "press": "mute",
     "cw": "volumeup"
   },
-
   "led": {
-    "mode": 1,
-    "color": "cyan"
+    "effect": "backlight",
+    "color": "cyan",
+    "mode_number": 1
   }
 }
